@@ -1,76 +1,83 @@
-// The games gallery. Add one entry per image; the section stays hidden while the list is empty.
-//   image: a file in the images folder, e.g. "images/game-1.jpg" (1920 x 1080 works well)
-//   title: shown under the image and in the viewer
+// The games slideshow. Add one entry per image; the section stays hidden while the list is empty.
+//   image: a file in the images folder, e.g. "images/game-1.jpg" (16:9, 1920 x 1080 works well)
+//   title: shown in the caption bar
 //   link:  the store page the image leads to (Steam, Google Play...); leave it out for an image with no store page yet
+//   caption: false hides the caption bar (for an image that already carries its own text)
 const GALLERY = [
-  { image: "images/placeholder.png", title: "Coming soon" },
+  { image: "images/placeholder.png", title: "Spearhill: coming soon", caption: false },
   // { image: "images/example.jpg", title: "Game name", link: "https://store.steampowered.com/app/0000000/" },
 ];
+const SLIDE_SECONDS = 8; // How long each image shows before the next fades in.
 
 (function () {
   const section = document.getElementById("games");
   if (!section || GALLERY.length === 0) return;
-  const grid = section.querySelector(".gallery");
   section.hidden = false;
+  const show = section.querySelector(".slideshow");
+  const several = GALLERY.length > 1;
 
-  GALLERY.forEach((item, i) => {
-    const button = document.createElement("button");
-    button.className = "thumb";
-    button.type = "button";
-    button.setAttribute("aria-label", "View " + item.title);
-    button.innerHTML = '<img loading="lazy" alt=""><span></span>';
-    button.querySelector("img").src = item.image;
-    button.querySelector("img").alt = item.title;
-    button.querySelector("span").textContent = item.title;
-    button.addEventListener("click", () => open(i));
-    grid.appendChild(button);
+  const slides = GALLERY.map((item, i) => {
+    const slide = document.createElement(item.link ? "a" : "div");
+    slide.className = "slide" + (i === 0 ? " current" : "");
+    if (item.link) { slide.href = item.link; slide.target = "_blank"; slide.rel = "noopener"; }
+    const img = document.createElement("img");
+    img.src = item.image; img.alt = item.title; if (i > 0) img.loading = "lazy";
+    slide.appendChild(img);
+    show.appendChild(slide);
+    return slide;
   });
 
-  // The viewer: one image at a time, previous and next, and the image's store link.
-  const viewer = document.createElement("div");
-  viewer.className = "viewer";
-  viewer.hidden = true;
-  viewer.setAttribute("role", "dialog");
-  viewer.setAttribute("aria-modal", "true");
-  viewer.innerHTML =
-    '<button class="close" type="button" aria-label="Close">&times;</button>' +
-    '<button class="prev" type="button" aria-label="Previous">&#8249;</button>' +
-    '<figure><a class="shot" target="_blank" rel="noopener"><img alt=""></a>' +
-    '<figcaption><span class="title"></span><a class="store" target="_blank" rel="noopener">View store page</a></figcaption></figure>' +
-    '<button class="next" type="button" aria-label="Next">&#8250;</button>';
-  document.body.appendChild(viewer);
-  let current = 0, startX = null;
+  const caption = document.createElement("div");
+  caption.className = "caption";
+  caption.innerHTML = '<span class="title"></span><a class="store" target="_blank" rel="noopener">View store page</a>';
+  show.appendChild(caption);
 
-  function show(i) {
-    current = (i + GALLERY.length) % GALLERY.length;
-    const item = GALLERY[current];
-    const img = viewer.querySelector("img");
-    img.src = item.image; img.alt = item.title;
-    viewer.querySelector(".title").textContent = item.title;
-    const shot = viewer.querySelector(".shot"), store = viewer.querySelector(".store");
-    if (item.link) { shot.href = item.link; store.href = item.link; store.hidden = false; }
-    else { shot.removeAttribute("href"); store.hidden = true; } // No store page yet.
-    const several = GALLERY.length > 1;
-    viewer.querySelector(".prev").hidden = !several;
-    viewer.querySelector(".next").hidden = !several;
+  let dots = [];
+  if (several) {
+    show.insertAdjacentHTML("beforeend",
+      '<button class="arrow prev" type="button" aria-label="Previous">&#8249;</button>' +
+      '<button class="arrow next" type="button" aria-label="Next">&#8250;</button>' +
+      '<div class="dots"></div>');
+    const row = show.querySelector(".dots");
+    dots = GALLERY.map((item, i) => {
+      const dot = document.createElement("button");
+      dot.type = "button"; dot.setAttribute("aria-label", item.title);
+      dot.addEventListener("click", () => go(i, true));
+      row.appendChild(dot);
+      return dot;
+    });
+    show.querySelector(".prev").addEventListener("click", () => go(current - 1, true));
+    show.querySelector(".next").addEventListener("click", () => go(current + 1, true));
   }
-  function open(i) { show(i); viewer.hidden = false; document.body.classList.add("viewing"); viewer.querySelector(".close").focus(); }
-  function close() { viewer.hidden = true; document.body.classList.remove("viewing"); }
 
-  viewer.querySelector(".close").addEventListener("click", close);
-  viewer.querySelector(".prev").addEventListener("click", () => show(current - 1));
-  viewer.querySelector(".next").addEventListener("click", () => show(current + 1));
-  viewer.addEventListener("click", (e) => { if (e.target === viewer) close(); });
-  document.addEventListener("keydown", (e) => {
-    if (viewer.hidden) return;
-    if (e.key === "Escape") close();
-    else if (e.key === "ArrowLeft") show(current - 1);
-    else if (e.key === "ArrowRight") show(current + 1);
-  });
-  viewer.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; }, { passive: true });
-  viewer.addEventListener("touchend", (e) => {
-    if (startX === null) return;
+  let current = 0, timer = null;
+  function go(i, byHand) {
+    slides[current].classList.remove("current");
+    current = (i + slides.length) % slides.length;
+    slides[current].classList.add("current");
+    const item = GALLERY[current];
+    caption.hidden = item.caption === false;
+    caption.querySelector(".title").textContent = item.title;
+    const store = caption.querySelector(".store");
+    if (item.link) { store.href = item.link; store.hidden = false; } else store.hidden = true;
+    dots.forEach((dot, k) => dot.classList.toggle("on", k === current));
+    if (byHand) restart();
+  }
+  function restart() {
+    clearInterval(timer);
+    if (several && !paused) timer = setInterval(() => go(current + 1), SLIDE_SECONDS * 1000);
+  }
+  let paused = false; // Paused while the pointer is over the slideshow, as a reader looks at an image.
+  show.addEventListener("mouseenter", () => { paused = true; clearInterval(timer); });
+  show.addEventListener("mouseleave", () => { paused = false; restart(); });
+  let startX = null;
+  show.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; }, { passive: true });
+  show.addEventListener("touchend", (e) => {
+    if (startX === null || !several) return;
     const dx = e.changedTouches[0].clientX - startX; startX = null;
-    if (Math.abs(dx) > 50) show(current + (dx < 0 ? 1 : -1));
+    if (Math.abs(dx) > 50) go(current + (dx < 0 ? 1 : -1), true);
   });
+
+  go(0);
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) restart();
 })();

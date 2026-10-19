@@ -1,0 +1,18 @@
+:root{--bg:#f6f4ef;--ink:#1f2430;--muted:#5e6472;--accent:#3c8f7c;--card:#ffffff;--line:#e2ded4}
+@media (prefers-color-scheme:dark){:root{--bg:#14171d;--ink:#e9e7e1;--muted:#a3a8b3;--accent:#6cc4ae;--card:#1c2028;--line:#2a2f39}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--accent)}
+.wrap{max-width:760px;margin:0 auto;padding:0 20px}
+.hero{padding:88px 0 56px;background:linear-gradient(160deg,rgba(60,143,124,.16),rgba(120,90,200,.10) 60%,transparent)}
+.hero.small{padding:56px 0 32px}
+.kicker{margin:0 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-size:13px}
+.kicker a{color:inherit;text-decoration:none}
+h1{margin:0;font-size:clamp(40px,8vw,64px);line-height:1.05;letter-spacing:-.02em}
+.hero.small h1{font-size:clamp(32px,6vw,44px)}
+.lede{margin:14px 0 0;color:var(--muted);font-size:19px;max-width:560px}
+main{padding:24px 20px 64px}
+h2{margin:40px 0 12px;font-size:22px}
+.prose li{margin-bottom:10px}
+footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--muted);font-size:14px}
+footer p{margin:4px 0}

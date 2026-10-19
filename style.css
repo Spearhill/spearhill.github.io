@@ -16,3 +16,19 @@ h2{margin:40px 0 12px;font-size:22px}
 .prose li{margin-bottom:10px}
 footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--muted);font-size:14px}
 footer p{margin:4px 0}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.thumb{display:block;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card);color:var(--ink);cursor:pointer;text-align:left;font:inherit}
+.thumb img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;transition:transform .25s}
+.thumb:hover img,.thumb:focus-visible img{transform:scale(1.04)}
+.thumb span{display:block;padding:10px 12px;font-size:15px}
+.viewer{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;background:rgba(10,12,16,.96)}
+.viewer[hidden]{display:none}
+.viewer figure{margin:0;flex:0 1 1200px;min-width:0;text-align:center}
+.viewer img{display:block;max-width:100%;max-height:78vh;margin:0 auto;border-radius:10px}
+.viewer figcaption{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;margin-top:12px;color:#e9e7e1}
+.viewer .store{padding:8px 16px;border-radius:999px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600}
+.viewer button{border:0;background:none;color:#fff;font-size:44px;line-height:1;cursor:pointer;padding:8px 12px}
+.viewer .close{position:absolute;top:8px;right:12px;font-size:38px}
+.viewer button[hidden]{display:none}
+body.viewing{overflow:hidden}
+@media (max-width:600px){.viewer .prev,.viewer .next{position:absolute;bottom:14px;font-size:38px}.viewer .prev{left:16px}.viewer .next{right:16px}}

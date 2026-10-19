@@ -1,8 +1,9 @@
 // The games gallery. Add one entry per image; the section stays hidden while the list is empty.
 //   image: a file in the images folder, e.g. "images/game-1.jpg" (1920 x 1080 works well)
 //   title: shown under the image and in the viewer
-//   link:  the store page the image leads to (Steam, Google Play...)
+//   link:  the store page the image leads to (Steam, Google Play...); leave it out for an image with no store page yet
 const GALLERY = [
+  { image: "images/placeholder.png", title: "Coming soon" },
   // { image: "images/example.jpg", title: "Game name", link: "https://store.steampowered.com/app/0000000/" },
 ];
 
@@ -46,8 +47,9 @@ const GALLERY = [
     const img = viewer.querySelector("img");
     img.src = item.image; img.alt = item.title;
     viewer.querySelector(".title").textContent = item.title;
-    viewer.querySelector(".shot").href = item.link;
-    viewer.querySelector(".store").href = item.link;
+    const shot = viewer.querySelector(".shot"), store = viewer.querySelector(".store");
+    if (item.link) { shot.href = item.link; store.href = item.link; store.hidden = false; }
+    else { shot.removeAttribute("href"); store.hidden = true; } // No store page yet.
     const several = GALLERY.length > 1;
     viewer.querySelector(".prev").hidden = !several;
     viewer.querySelector(".next").hidden = !several;
